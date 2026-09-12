@@ -69,6 +69,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    fun updateMonthShiftType(type: ShiftType, applyToMarkedDays: Boolean = true) {
+        viewModelScope.launch {
+            repo.updateMonthShiftType(_yearMonth.value, type, applyToMarkedDays)
+        }
+    }
+
     fun addAdjustItem(name: String, amount: Double, isIncome: Boolean) {
         viewModelScope.launch {
             repo.addAdjustItem(_yearMonth.value, name, amount, isIncome)

@@ -81,6 +81,26 @@ class WageRepository(private val context: Context) {
         mutate(yearMonth) { it.copy(nightAllowance = config) }
     }
 
+    /**
+     * 设置本月默认白班/夜班。
+     * @param applyToMarkedDays 若为 true，将本月已标记为上班/加班的日期一并改成该班次
+     */
+    suspend fun updateMonthShiftType(
+        yearMonth: String,
+        type: ShiftType,
+        applyToMarkedDays: Boolean = true
+    ) {
+        mutate(yearMonth) { data ->
+            val days = if (applyToMarkedDays) {
+                data.days.mapValues { (_, rec) ->
+                    if (rec.status == DayStatus.OFF) rec
+                    else rec.copy(shiftType = type)
+                }
+            } else data.days
+            data.copy(monthShiftType = type, days = days)
+        }
+    }
+
     suspend fun addAdjustItem(yearMonth: String, name: String, amount: Double, isIncome: Boolean) {
         mutate(yearMonth) { data ->
             val item = AdjustItem(

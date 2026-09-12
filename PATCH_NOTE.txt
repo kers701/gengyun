@@ -1,26 +1,25 @@
-增量补丁：工资计算规则修正 + 调班功能
+增量补丁：本月默认白/夜班 + 关于页检查更新
 
-一、工资计算（按你的说明）
-- 正班时段 = 班次配置时长（如 8:00–17:00）
-- 工作日：正班 × 正班时薪 + 正班之外加班小时 × 工作日加班时薪
-- 周末/节假日：正班时段按周末/节假日加班价；额外加班仍按对应加班价
-- 调班只交换「正班时段」的计费类型，不交换加班价的自然日属性
+1. 点击月份标题
+   - 可指定本月为「白班」或「夜班」
+   - 可选「同时更新本月已标记的工作日」
+   - 新标记出勤时默认使用本月班次
+   - 标题下方显示「本月：白班/夜班」
 
-例：正班 20、平时加班 30、周末加班 40；周六与周一调班
-- 周一：8–17 按 40 + 后续加班按 30
-- 周六：8–17 按 20 + 后续加班按 40
+2. 关于页检查更新（对齐 wallpaper_app）
+   - 请求 https://api.github.com/repos/kers701/gengyun/releases/latest
+   - 比较 versionName，有新版可下载 APK 并调起安装
+   - 需 INTERNET、REQUEST_INSTALL_PACKAGES、FileProvider
 
-二、调班操作
-- 长按某一天 → 进入调班（顶部橙色提示）
-- 再点击另一天完成调班（可先切月份再点，支持跨月）
-- 日历上紫色「调」标记已调班日期
-- 日期编辑弹窗可「取消与此日的调班」
-
-三、涉及文件（相对项目根目录完整路径）
+涉及文件（相对项目根完整路径）：
+  app/build.gradle.kts
+  app/src/main/AndroidManifest.xml
+  app/src/main/res/xml/file_paths.xml
   app/src/main/java/com/kers/gengyun/domain/Models.kt
   app/src/main/java/com/kers/gengyun/data/WageRepository.kt
   app/src/main/java/com/kers/gengyun/ui/MainViewModel.kt
   app/src/main/java/com/kers/gengyun/ui/screens/HomeScreen.kt
+  app/src/main/java/com/kers/gengyun/ui/screens/SettingsScreen.kt
+  app/src/main/java/com/kers/gengyun/util/AppUpdateChecker.kt
 
-四、使用
-  解压后按路径覆盖到本地工程。本补丁未推送 GitHub。
+未推送 GitHub。覆盖到本地工程后 Sync Gradle 再编译。

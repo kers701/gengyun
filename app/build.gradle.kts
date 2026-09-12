@@ -28,8 +28,8 @@ android {
         applicationId = "com.kers.gengyun"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1002
-        versionName = "1.0.2"
+        versionCode = 1003
+        versionName = "1.0.3"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -110,4 +110,6 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }

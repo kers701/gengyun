@@ -103,7 +103,9 @@ data class MonthData(
     val wageRates: WageRates = WageRates(),
     val nightAllowance: NightAllowanceConfig = NightAllowanceConfig(),
     val adjustItems: List<AdjustItem> = emptyList(),
-    val days: Map<String, DayRecord> = emptyMap()  // key = yyyy-MM-dd
+    val days: Map<String, DayRecord> = emptyMap(),  // key = yyyy-MM-dd
+    /** 本月默认班次：白班 / 夜班（点击月份可切换） */
+    val monthShiftType: ShiftType = ShiftType.DAY
 )
 
 /** 计算结果 */

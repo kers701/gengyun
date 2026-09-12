@@ -49,6 +49,7 @@ fun HomeScreen(
 
     var selectedDay by remember { mutableStateOf<String?>(null) }
     var showDayDialog by remember { mutableStateOf(false) }
+    var showMonthShiftDialog by remember { mutableStateOf(false) }
 
     val ym = YearMonth.parse(yearMonth)
     val daysInMonth = ym.lengthOfMonth()
@@ -91,11 +92,28 @@ fun HomeScreen(
                 IconButton(onClick = { vm.prevMonth() }) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "上月")
                 }
-                Text(
-                    text = yearMonth,
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .combinedClickable(
+                            onClick = { showMonthShiftDialog = true },
+                            onLongClick = { showMonthShiftDialog = true }
+                        )
+                        .padding(horizontal = 8.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = yearMonth,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = if (data.monthShiftType == ShiftType.NIGHT) "本月：夜班" else "本月：白班",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (data.monthShiftType == ShiftType.NIGHT)
+                            Color(0xFF1565C0) else Color(0xFF2E7D32)
+                    )
+                }
                 IconButton(onClick = { vm.nextMonth() }) {
                     Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "下月")
                 }
@@ -231,10 +249,26 @@ fun HomeScreen(
         }
     }
 
+    if (showMonthShiftDialog) {
+        MonthShiftDialog(
+            yearMonth = yearMonth,
+            current = data.monthShiftType,
+            onDismiss = { showMonthShiftDialog = false },
+            onConfirm = { type, apply ->
+                vm.updateMonthShiftType(type, apply)
+                showMonthShiftDialog = false
+            }
+        )
+    }
+
     if (showDayDialog && selectedDay != null) {
+        val existing = data.days[selectedDay]
         DayEditDialog(
             date = selectedDay!!,
-            current = data.days[selectedDay] ?: DayRecord(date = selectedDay!!),
+            current = existing ?: DayRecord(
+                date = selectedDay!!,
+                shiftType = data.monthShiftType
+            ),
             onDismiss = { showDayDialog = false },
             onSave = { day ->
                 vm.updateDay(day)
@@ -246,6 +280,52 @@ fun HomeScreen(
             }
         )
     }
+}
+
+@Composable
+private fun MonthShiftDialog(
+    yearMonth: String,
+    current: ShiftType,
+    onDismiss: () -> Unit,
+    onConfirm: (ShiftType, applyToMarked: Boolean) -> Unit
+) {
+    var type by remember { mutableStateOf(current) }
+    var applyToMarked by remember { mutableStateOf(true) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("本月班次 · $yearMonth") },
+        text = {
+            Column {
+                Text("指定本月默认白班或夜班（新标记出勤时默认使用）")
+                Spacer(Modifier.height(12.dp))
+                Row {
+                    FilterChip(
+                        selected = type == ShiftType.DAY,
+                        onClick = { type = ShiftType.DAY },
+                        label = { Text("白班") }
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    FilterChip(
+                        selected = type == ShiftType.NIGHT,
+                        onClick = { type = ShiftType.NIGHT },
+                        label = { Text("夜班") }
+                    )
+                }
+                Spacer(Modifier.height(12.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(checked = applyToMarked, onCheckedChange = { applyToMarked = it })
+                    Text("同时更新本月已标记的工作日")
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(type, applyToMarked) }) { Text("确定") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("取消") }
+        }
+    )
 }
 
 @Composable
