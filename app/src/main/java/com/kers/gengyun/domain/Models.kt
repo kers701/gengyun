@@ -12,8 +12,20 @@ enum class ShiftType {
 enum class DayStatus {
     OFF,           // 不上班
     WORK,          // 上班（正班）
-    OVERTIME,      // 加班
-    WORK_AND_OT    // 正班+加班（预留）
+    OVERTIME,      // 正班 + 可能有加班
+    WORK_AND_OT    // 兼容旧数据，等同 OVERTIME
+}
+
+/**
+ * 正班时段计费类型（调班时会换成对方的类型）
+ * - WEEKDAY：正班按时薪
+ * - WEEKEND：正班按时段按周末加班价
+ * - HOLIDAY：正班按时段按节假日加班价
+ */
+enum class PayKind {
+    WEEKDAY,
+    WEEKEND,
+    HOLIDAY
 }
 
 @Serializable
@@ -71,9 +83,16 @@ data class DayRecord(
     val date: String,                 // yyyy-MM-dd
     val status: DayStatus = DayStatus.OFF,
     val shiftType: ShiftType = ShiftType.DAY,
-    val isOvertime: Boolean = false,  // 是否加班
-    val otHours: Double = 0.0,        // 加班小时（可选自定义）
-    val isHoliday: Boolean = false    // 是否节假日
+    val isOvertime: Boolean = false,  // 是否有加班（兼容）
+    val otHours: Double = 0.0,        // 正班之外的加班小时
+    val isHoliday: Boolean = false,   // 是否节假日（按自然日）
+    /** 调班对象日期 yyyy-MM-dd；null 表示未调班 */
+    val swappedWith: String? = null,
+    /**
+     * 调班后：正班时段按对方的计费类型
+     * WEEKDAY / WEEKEND / HOLIDAY；null 表示未调班，用本自然日类型
+     */
+    val swapBaseKind: String? = null
 )
 
 /** 某月完整数据 */

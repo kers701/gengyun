@@ -27,6 +27,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         .map { repo.calculate(it) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), WageSummary())
 
+    /** 调班：已长按选中的第一天 yyyy-MM-dd，null 表示未在调班模式 */
+    private val _swapPick = MutableStateFlow<String?>(null)
+    val swapPick: StateFlow<String?> = _swapPick.asStateFlow()
+
     fun setYearMonth(ym: String) {
         _yearMonth.value = ym
     }
@@ -74,6 +78,39 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun removeAdjustItem(id: String) {
         viewModelScope.launch {
             repo.removeAdjustItem(_yearMonth.value, id)
+        }
+    }
+
+    /** 长按某日：进入调班选择，或取消当前选择 */
+    fun onDayLongPress(date: String) {
+        if (_swapPick.value == date) {
+            _swapPick.value = null
+        } else {
+            _swapPick.value = date
+        }
+    }
+
+    /** 点击某日：若在调班模式则完成调班；否则由 UI 打开编辑 */
+    fun onDayClickForSwap(date: String): Boolean {
+        val pick = _swapPick.value ?: return false
+        if (pick == date) {
+            _swapPick.value = null
+            return true
+        }
+        viewModelScope.launch {
+            repo.swapDays(pick, date)
+            _swapPick.value = null
+        }
+        return true
+    }
+
+    fun cancelSwapPick() {
+        _swapPick.value = null
+    }
+
+    fun clearSwap(date: String) {
+        viewModelScope.launch {
+            repo.clearSwap(date)
         }
     }
 }
